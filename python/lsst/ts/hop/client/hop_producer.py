@@ -6,18 +6,19 @@ class hop_producer:
 
     Parameters
     hostname: `str`
-        Hopskotch hostname to subscribe to. Production instance is kafka.scimma.org;
-        development instance is dev.hop.scimma.org
+        Hopskotch hostname to subscribe to. Production instance is
+        kafka.scimma.org; development instance is dev.hop.scimma.org
     auth:    `hop.Auth` or `False`
-        auth object to use to authenticate to a SCiMMA topic. If False, no authentication
-        is attempted. Default is to use any existing credentials associated with the 
-        current hop-client installation.
+        auth object to use to authenticate to a SCiMMA topic. If False, no
+        authentication is attempted. Default is to use any existing credentials
+        associated with the current hop-client installation.
     """
 
     def __init__(self, hostname='kafka.scimma.org', auth='current'):
         self.hostname = hostname
         if auth == 'current':
-            self.auth = hop.auth.select_matching_auth(hop.auth.load_auth(), hostname)
+            self.auth = hop.auth.select_matching_auth(hop.auth.load_auth(),
+                                                      hostname)
 
     def _read_topic(self, topic='sys.heartbeat',
                     start_offset=hop.io.consumer.ConsumerStartPosition.LATEST):
@@ -25,10 +26,12 @@ class hop_producer:
 
         Parameters:
         topic: `str`
-            kafka topic from which to stream. Defaults to Hopskotch system heartbeat.
+            kafka topic from which to stream. Defaults to Hopskotch system
+            heartbeat.
         start_offset: `hop.io.consumer.ConsumerStartPosition`
-            kafka topic offset from which to start the stream at (EARLIEST or LATEST).
-            Defaults to the latest offest, so only new messages are streamed.
+            kafka topic offset from which to start the stream at (EARLIEST or
+            LATEST). Defaults to the latest offest, so only new messages are
+            streamed.
 
         """
 
@@ -38,7 +41,8 @@ class hop_producer:
                 self._message_parsing(message)
 
     def _message_parsing(self, message):
-        """Placeholder function for processing a message. Currently just print the message.
+        """Placeholder function for processing a message. Currently just print
+        the message.
 
         Parameters:
         message: `hop.models.*`
@@ -47,16 +51,16 @@ class hop_producer:
         print(message)
 
     def get_earliest_offset(self):
-        """Shorthand function to access the earliest kafka offset. Useful when wishing to stream
-        all messages in a topic (previous and new).
+        """Shorthand function to access the earliest kafka offset. Useful when
+        wishing to stream all messages in a topic (previous and new).
 
         """
 
         return hop.io.consumer.ConsumerStartPosition.EARLIEST
 
     def get_latest_offset(self):
-        """Shorthand function to access the latest kafka offset. Useful when wishing to stream
-        only new messages sent to a topic.
+        """Shorthand function to access the latest kafka offset. Useful when
+        wishing to stream only new messages sent to a topic.
 
         """
         return hop.io.consumer.ConsumerStartPosition.LATEST
