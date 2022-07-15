@@ -1,7 +1,7 @@
 import hop
 
 
-class hop_producer:
+class hopProducer:
     """Produce kafka messages from SCiMMA Hopskotch kafka topics.
 
     Parameters
