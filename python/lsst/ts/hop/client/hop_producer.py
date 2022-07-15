@@ -71,5 +71,5 @@ class hopProducer:
 if __name__ == "__main__":
     scimma_hostname = "kafka.scimma.org"
 
-    test_producer = hop_producer(scimma_hostname)
+    test_producer = hopProducer(scimma_hostname)
     test_producer._read_topic()
