@@ -14,14 +14,16 @@ class hop_producer:
         associated with the current hop-client installation.
     """
 
-    def __init__(self, hostname='kafka.scimma.org', auth='current'):
+    def __init__(self, hostname="kafka.scimma.org", auth="current"):
         self.hostname = hostname
-        if auth == 'current':
-            self.auth = hop.auth.select_matching_auth(hop.auth.load_auth(),
-                                                      hostname)
+        if auth == "current":
+            self.auth = hop.auth.select_matching_auth(hop.auth.load_auth(), hostname)
 
-    def _read_topic(self, topic='sys.heartbeat',
-                    start_offset=hop.io.consumer.ConsumerStartPosition.LATEST):
+    def _read_topic(
+        self,
+        topic="sys.heartbeat",
+        start_offset=hop.io.consumer.ConsumerStartPosition.LATEST,
+    ):
         """Start streaming messages from a kafka topic.
 
         Parameters:
@@ -36,7 +38,7 @@ class hop_producer:
         """
 
         stream = hop.Stream(auth=self.auth, start_at=start_offset)
-        with stream.open(f'kafka://{self.hostname}/{topic}', 'r') as s:
+        with stream.open(f"kafka://{self.hostname}/{topic}", "r") as s:
             for message in s:
                 self._message_parsing(message)
 
@@ -67,7 +69,7 @@ class hop_producer:
 
 
 if __name__ == "__main__":
-    scimma_hostname = 'kafka.scimma.org'
+    scimma_hostname = "kafka.scimma.org"
 
     test_producer = hop_producer(scimma_hostname)
     test_producer._read_topic()
