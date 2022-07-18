@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.import hop
 
+import hop
 
 class hopProducer:
     """Produce kafka messages from SCiMMA Hopskotch kafka topics.
