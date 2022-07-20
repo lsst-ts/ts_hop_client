@@ -21,6 +21,10 @@
 
 import hop
 
+import fastavro
+
+from make_avro_schema import *
+
 
 class hopProducer:
     """Produce kafka messages from SCiMMA Hopskotch kafka topics.
@@ -35,10 +39,16 @@ class hopProducer:
         associated with the current hop-client installation.
     """
 
-    def __init__(self, hostname="kafka.scimma.org", auth="current"):
-        self.hostname = hostname
+    def __init__(self,
+                 rubin_topic="rubin.testing-schema",
+                 scimma_hostname="kafka.scimma.org",
+                 auth="current"):
+        self.rubin_topic = rubin_topic
+        self.scimma_hostname = scimma_hostname
         if auth == "current":
-            self.auth = hop.auth.select_matching_auth(hop.auth.load_auth(), hostname)
+            self.auth = hop.auth.select_matching_auth(hop.auth.load_auth(),
+                                                      scimma_hostname)
+        self.topic_schema = None
 
     def _read_topic(
         self,
@@ -59,11 +69,11 @@ class hopProducer:
         """
 
         stream = hop.Stream(auth=self.auth, start_at=start_offset)
-        with stream.open(f"kafka://{self.hostname}/{topic}", "r") as s:
+        with stream.open(f"kafka://{self.scimma_hostname}/{topic}", "r") as s:
             for message in s:
                 self._message_parsing(message)
 
-    def _message_parsing(self, message):
+    def _message_printing(self, message):
         """Placeholder function for processing a message. Currently just print
         the message.
 
@@ -73,6 +83,25 @@ class hopProducer:
         """
         print(message)
 
+    def _message_parsing(self, message):
+        """Placeholder function for processing a message.
+
+        Parameters:
+        message: `hop.models.*`
+            hop message model object received from a hop stream object.
+        """
+        # print("processing message: ", message)
+
+        avro_message_schema = make_avro_schema_heartbeat(message)
+
+        # write the avro message to a test topic
+        stream = hop.Stream(auth=self.auth)
+        with stream.open(f"kafka://{self.scimma_hostname}/{self.rubin_topic}",
+                         "w") as s:
+            print("writing avro message\n")
+            s.write(hop.models.AvroBlob([message.content],
+                                        schema=avro_message_schema))
+        
     def get_earliest_offset(self):
         """Shorthand function to access the earliest kafka offset. Useful when
         wishing to stream all messages in a topic (previous and new).
@@ -91,6 +120,7 @@ class hopProducer:
 
 if __name__ == "__main__":
     scimma_hostname = "kafka.scimma.org"
+    rubin_topic = "rubin.testing-schema"
 
-    test_producer = hopProducer(scimma_hostname)
+    test_producer = hopProducer(rubin_topic, scimma_hostname)
     test_producer._read_topic()

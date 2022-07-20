@@ -23,8 +23,6 @@
 # https://github.com/lsst-ts/ts_salkafka
 
 
-__all__ = ["make_avro_schema"]
-
 _SCALAR_TYPE_DICT = {
     bool: "boolean",
     int: "long",
