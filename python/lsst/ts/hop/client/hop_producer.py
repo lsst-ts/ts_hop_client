@@ -48,7 +48,7 @@ class hopProducer:
         if auth == "current":
             self.auth = hop.auth.select_matching_auth(hop.auth.load_auth(),
                                                       scimma_hostname)
-        self.topic_schema = None
+        self.topic_schema = make_avro_schema_heartbeat()
 
     def _read_topic(
         self,
@@ -67,11 +67,13 @@ class hopProducer:
             streamed.
 
         """
+        heartbeat_avro_schema = self.topic_schema
 
         stream = hop.Stream(auth=self.auth, start_at=start_offset)
         with stream.open(f"kafka://{self.scimma_hostname}/{topic}", "r") as s:
             for message in s:
-                self._message_parsing(message)
+                # self._message_parsing(message)
+                self._message_relay(message, heartbeat_avro_schema)
 
     def _message_printing(self, message):
         """Placeholder function for processing a message. Currently just print
@@ -83,16 +85,11 @@ class hopProducer:
         """
         print(message)
 
-    def _message_parsing(self, message):
-        """Placeholder function for processing a message.
+    def _message_relay(self, message, avro_schema):
+        """Placeholder function for translating a heartbeat message into avro
+        and relaying it to another topic.
 
-        Parameters:
-        message: `hop.models.*`
-            hop message model object received from a hop stream object.
         """
-        # print("processing message: ", message)
-
-        avro_message_schema = make_avro_schema_heartbeat(message)
 
         # write the avro message to a test topic
         stream = hop.Stream(auth=self.auth)
@@ -100,7 +97,25 @@ class hopProducer:
                          "w") as s:
             print("writing avro message\n")
             s.write(hop.models.AvroBlob([message.content],
-                                        schema=avro_message_schema))
+                                        schema=avro_schema))
+
+    def _message_parsing(self, message, avro_schema=None):
+        """Placeholder function for processing a message.
+
+        Parameters:
+        message: `hop.models.*`
+            hop message model object received from a hop stream object.
+        """
+        # print("processing message: ", message)
+        avro_schema = make_avro_schema_heartbeat(message)
+
+        # write the avro message to a test topic
+        stream = hop.Stream(auth=self.auth)
+        with stream.open(f"kafka://{self.scimma_hostname}/{self.rubin_topic}",
+                         "w") as s:
+            print("writing avro message\n")
+            s.write(hop.models.AvroBlob([message.content],
+                                        schema=avro_schema))
         
     def get_earliest_offset(self):
         """Shorthand function to access the earliest kafka offset. Useful when

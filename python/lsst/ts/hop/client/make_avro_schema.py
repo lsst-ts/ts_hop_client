@@ -30,7 +30,48 @@ _SCALAR_TYPE_DICT = {
     str: "string",
 }
 
-def make_avro_schema_heartbeat(message):
+def make_avro_schema_heartbeat():
+    """Make an Avro schema for the SCiMMA heartbeat topic.
+
+    returns:
+    avro_schema
+        the Avro schema for the heartbeat topic
+    """
+
+    fields = [
+        dict(
+            name="timestamp",
+            type="long",
+            description="message timestamp",
+            default=0,
+        ),
+
+        dict(
+            name="count",
+            type="long",
+            description="heartbeat count",
+            default=0,
+        ),
+
+        dict(
+            name="beat",
+            type="string",
+            description="message content",
+            default="default beat content",
+        ),
+
+    ]
+
+    avro_schema = dict(
+        name=f"kafka.scimma.org/sys-heartbeat",
+        type="record",
+        fields=fields,
+    )
+
+    return avro_schema
+
+
+def make_avro_schema_heartbeat_message(message):
     """Make an Avro schema for a given heartbeat message.
 
     Parameters
@@ -86,15 +127,15 @@ def make_avro_schema_heartbeat(message):
             default=field_data,
         )
 
-    # # Add description and units metadata, if available.
-    # field_metadata = topic_metadata.field_info.get(field_name)
-    # if field_metadata is not None:
-    #     for attr_name in ("description", "units"):
-    #         value = getattr(field_metadata, attr_name, None)
-    #         if value is not None:
-    #             field_entry[attr_name] = value
+        # # Add description and units metadata, if available.
+        # field_metadata = topic_metadata.field_info.get(field_name)
+        # if field_metadata is not None:
+        #     for attr_name in ("description", "units"):
+        #         value = getattr(field_metadata, attr_name, None)
+        #         if value is not None:
+        #             field_entry[attr_name] = value
 
-    # fields.append(field_entry)
+        fields.append(field_entry)
 
     avro_schema = dict(
         name=f"kafa://kafka.scimma.org/sys-heartbeat",
