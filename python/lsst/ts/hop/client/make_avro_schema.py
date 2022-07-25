@@ -47,6 +47,22 @@ def make_avro_schema_heartbeat():
 
     fields = [
         dict(
+            name="private_efdStamp",
+            type="double",
+            description="UTC time for EFD timestamp. "
+            "An integer (the number of leap seconds) "
+            "different from private_sndStamp.",
+            units="second",
+            default=0,
+        ),
+        dict(
+            name="private_kafkaStamp",
+            type="double",
+            description="TAI time at which the Kafka message was created.",
+            units="second",
+            default=0,
+        ),
+        dict(
             name="timestamp",
             type="long",
             description="message timestamp",
@@ -67,7 +83,7 @@ def make_avro_schema_heartbeat():
     ]
 
     avro_schema = dict(
-        name="scimma.org.sys-heartbeat",
+        name="lsst.sal.scimma.sys_heartbeat",
         type="record",
         fields=fields,
     )
@@ -141,7 +157,7 @@ def make_avro_schema_heartbeat_message(message):
         fields.append(field_entry)
 
     avro_schema = dict(
-        name="scimma.org.sys-heartbeat",
+        name="lsst.sal.scimma.sys_heartbeat",
         type="record",
         fields=fields,
     )
