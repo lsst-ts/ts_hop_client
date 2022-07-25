@@ -120,14 +120,17 @@ class HopProducer:
             with stream.open(f"kafka://{self.scimma_hostname}/{topic}", "r") as s:
                 for message in s:
                     avro_data = make_avro_schema_heartbeat_message(message=message)
+                    self.log.debug(f"Sending message: {message!r}")
                     asyncio.run(
                         self.kafka_producer.send_and_wait(
                             self.avro_schema["name"], value=avro_data
                         )
                     )
         except Exception as e:
+            self.log.exception("Error reading/sending scimma topic.")
             self.done_task.set_exception(e)
         else:
+            self.log.info("Exiting read topic loop, setting done task.")
             self.done_task.set_result(True)
 
     def _message_printing(self, message):
@@ -251,8 +254,11 @@ class HopProducer:
             wait_for_ack=args.wait_for_ack,
         )
 
-        log = logging.getLogger(__name__)
-
+        log = logging.getLogger()
+        if not log.hasHandlers():
+            log.addHandler(logging.StreamHandler())
+        log.setLevel(args.log_level)
+        
         async with KafkaProducerFactory(
             config=kafka_config, log=log
         ) as kafka_producer_factory, cls(
