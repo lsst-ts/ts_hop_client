@@ -95,6 +95,22 @@ class HopProducer:
 
         self.done_task = utils.make_done_future()
 
+    async def read_topic_loop(self):
+        """Read messages and send them to the EFD."""
+        for avro_data in self._read_topic():
+            try:
+                await self.kafka_producer.send_and_wait(
+                    self.avro_schema["name"], value=avro_data
+                )
+            except Exception as e:
+                self.log.exception("Sending scimma topic.")
+                if not self.done_task.done():
+                    self.done_task.set_exception(e)
+
+        if not self.done_task.done():
+            self.log.info("Read loop finishing but done task not set.")
+            self.done_task.set_result(True)
+
     def _read_topic(
         self,
         topic="sys.heartbeat",
@@ -120,18 +136,18 @@ class HopProducer:
             with stream.open(f"kafka://{self.scimma_hostname}/{topic}", "r") as s:
                 for message in s:
                     avro_data = make_avro_schema_heartbeat_message(message=message)
-                    self.log.debug(f"Sending message: {message!r}")
-                    asyncio.run(
-                        self.kafka_producer.send_and_wait(
-                            self.avro_schema["name"], value=avro_data
-                        )
-                    )
+                    yield avro_data
+                    if self.done_task.done():
+                        self.log.debug("Done task completed. Interrupting read topic loop.")
+                        break
         except Exception as e:
             self.log.exception("Error reading/sending scimma topic.")
-            self.done_task.set_exception(e)
+            if not self.done_task.done():
+                self.done_task.set_exception(e)
         else:
             self.log.info("Exiting read topic loop, setting done task.")
-            self.done_task.set_result(True)
+            if not self.done_task.done():
+                self.done_task.set_result(True)
 
     def _message_printing(self, message):
         """Placeholder function for processing a message. Currently just print
@@ -199,9 +215,7 @@ class HopProducer:
         )
         self.done_task = asyncio.Future()
 
-        event_loop = asyncio.get_event_loop()
-
-        self._read_topic_task = event_loop.run_in_executor(None, self._read_topic)
+        self._read_topic_task = asyncio.create_task(self.read_topic_loop())
 
     async def close(self):
         """Stop background tasks."""
@@ -223,7 +237,7 @@ class HopProducer:
 
     async def done(self):
         """Wait until done_task finishes."""
-        await self.done_task
+        return await self.done_task
 
     @classmethod
     async def amain(cls):
@@ -258,13 +272,14 @@ class HopProducer:
         if not log.hasHandlers():
             log.addHandler(logging.StreamHandler())
         log.setLevel(args.log_level)
-        
+
         async with KafkaProducerFactory(
             config=kafka_config, log=log
         ) as kafka_producer_factory, cls(
             kafka_factory=kafka_producer_factory, log=log
         ) as hop_producer:
             await hop_producer.done()
+            log.debug("Producer done, exiting...")
 
     @staticmethod
     def make_argument_parser():
