@@ -24,7 +24,6 @@ __all__ = [
     "run_hop_producer",
 ]
 
-import sys
 import hop
 import asyncio
 import logging
@@ -37,7 +36,10 @@ from lsst.ts.salkafka.kafka_producer_factory import (
     KafkaProducerFactory,
 )
 
-from .make_avro_schema import make_avro_schema_heartbeat
+from .make_avro_schema import (
+    make_avro_schema_heartbeat,
+    make_avro_schema_heartbeat_message,
+)
 
 
 class HopProducer:
@@ -117,12 +119,7 @@ class HopProducer:
         try:
             with stream.open(f"kafka://{self.scimma_hostname}/{topic}", "r") as s:
                 for message in s:
-                    avro_data = hop.models.AvroBlob(
-                        [message.content], schema=self.avro_schema
-                    )
-                    current_tai = utils.current_tai()
-                    avro_data["private_efdStamp"] = utils.utc_from_tai_unix(current_tai)
-                    avro_data["private_kafkaStamp"] = current_tai
+                    avro_data = make_avro_schema_heartbeat_message(message=message)
                     asyncio.run(
                         self.kafka_producer.send_and_wait(
                             self.avro_schema["name"], value=avro_data
