@@ -22,11 +22,12 @@
 # adapted for use with SCiMMA messages from
 # https://github.com/lsst-ts/ts_salkafka
 
-
 __all__ = [
     "make_avro_schema_heartbeat",
     "make_avro_schema_heartbeat_message",
 ]
+
+from lsst.ts import utils
 
 _SCALAR_TYPE_DICT = {
     bool: "boolean",
@@ -101,78 +102,12 @@ def make_avro_schema_heartbeat_message(message):
 
     Returns
     -------
-    avro_schema : `dict`
-        the Avro schema for the message
+    `dict`
+        Dictionary with the data from the input message.
     """
+    current_tai = utils.current_tai()
+    avro_data = dict(message.content.items())
+    avro_data["private_efdStamp"] = utils.utc_from_tai_unix(current_tai)
+    avro_data["private_kafkaStamp"] = current_tai
 
-    fields = [
-        dict(
-            name="timestamp",
-            type="long",
-            description="message timestamp",
-            default=0,
-        ),
-        dict(
-            name="count",
-            type="long",
-            description="heartbeat count",
-            default=0,
-        ),
-        dict(
-            name="beat",
-            type="string",
-            description="message content",
-            default="default beat content",
-        ),
-    ]
-
-    for field_name, field_data in message.content.items():
-        # Set Avro type from Python type because this is more robust than
-        # getting it from field metadata (which is parsed on a "best effort"
-        # basis). The cost is that some Avro field types are longer than
-        # necessary (e.g. float is double and int is long).
-        if isinstance(field_data, list):
-            # Field is an array.
-            python_item_type = type(field_data[0])
-            avro_item_type = _SCALAR_TYPE_DICT[python_item_type]
-            avro_field_type = dict(type="array", items=avro_item_type)
-        else:
-            # Field is a scalar.
-            python_type = type(field_data)
-            avro_field_type = _SCALAR_TYPE_DICT[python_type]
-        field_entry = dict(
-            name=field_name,
-            type=avro_field_type,
-            default=field_data,
-        )
-
-        # # Add description and units metadata, if available.
-        # field_metadata = topic_metadata.field_info.get(field_name)
-        # if field_metadata is not None:
-        #     for attr_name in ("description", "units"):
-        #         value = getattr(field_metadata, attr_name, None)
-        #         if value is not None:
-        #             field_entry[attr_name] = value
-
-        fields.append(field_entry)
-
-    avro_schema = dict(
-        name="lsst.sal.scimma.sys_heartbeat",
-        type="record",
-        fields=fields,
-    )
-    # avro_schema = dict(
-    #     name=f"lsst.sal.{topic.salinfo.name}.{topic.sal_name}",
-    #     type="record",
-    #     fields=fields,
-    # )
-
-    # for attr_name in ("sal_version", "xml_version"):
-    #     value = getattr(topic.salinfo.metadata, attr_name, None)
-    #     if value is not None:
-    #         avro_schema[attr_name] = value
-
-    # if topic_metadata.description is not None:
-    #     avro_schema["description"] = topic_metadata.description
-
-    return avro_schema
+    return avro_data
