@@ -23,6 +23,11 @@
 # https://github.com/lsst-ts/ts_salkafka
 
 
+__all__ = [
+    "make_avro_schema_heartbeat",
+    "make_avro_schema_heartbeat_message",
+]
+
 _SCALAR_TYPE_DICT = {
     bool: "boolean",
     int: "long",
@@ -30,11 +35,13 @@ _SCALAR_TYPE_DICT = {
     str: "string",
 }
 
+
 def make_avro_schema_heartbeat():
     """Make an Avro schema for the SCiMMA heartbeat topic.
 
-    returns:
-    avro_schema
+    Returns
+    -------
+    avro_schema : `dict`
         the Avro schema for the heartbeat topic
     """
 
@@ -45,25 +52,22 @@ def make_avro_schema_heartbeat():
             description="message timestamp",
             default=0,
         ),
-
         dict(
             name="count",
             type="long",
             description="heartbeat count",
             default=0,
         ),
-
         dict(
             name="beat",
             type="string",
             description="message content",
             default="default beat content",
         ),
-
     ]
 
     avro_schema = dict(
-        name=f"kafka.scimma.org/sys-heartbeat",
+        name="scimma.org.sys-heartbeat",
         type="record",
         fields=fields,
     )
@@ -75,11 +79,13 @@ def make_avro_schema_heartbeat_message(message):
     """Make an Avro schema for a given heartbeat message.
 
     Parameters
-    message: `hop.models.*`
+    ----------
+    message : `hop.models.*`
         message for which to generate the schema.
 
-    returns:
-    avro_schema
+    Returns
+    -------
+    avro_schema : `dict`
         the Avro schema for the message
     """
 
@@ -90,22 +96,19 @@ def make_avro_schema_heartbeat_message(message):
             description="message timestamp",
             default=0,
         ),
-
         dict(
             name="count",
             type="long",
             description="heartbeat count",
             default=0,
         ),
-
         dict(
             name="beat",
             type="string",
             description="message content",
             default="default beat content",
         ),
-
-]
+    ]
 
     for field_name, field_data in message.content.items():
         # Set Avro type from Python type because this is more robust than
@@ -138,7 +141,7 @@ def make_avro_schema_heartbeat_message(message):
         fields.append(field_entry)
 
     avro_schema = dict(
-        name=f"kafa://kafka.scimma.org/sys-heartbeat",
+        name="scimma.org.sys-heartbeat",
         type="record",
         fields=fields,
     )
@@ -147,7 +150,7 @@ def make_avro_schema_heartbeat_message(message):
     #     type="record",
     #     fields=fields,
     # )
-    
+
     # for attr_name in ("sal_version", "xml_version"):
     #     value = getattr(topic.salinfo.metadata, attr_name, None)
     #     if value is not None:
@@ -157,4 +160,3 @@ def make_avro_schema_heartbeat_message(message):
     #     avro_schema["description"] = topic_metadata.description
 
     return avro_schema
-
