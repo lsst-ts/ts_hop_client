@@ -198,9 +198,7 @@ class HopProducer:
 
         event_loop = asyncio.get_event_loop()
 
-        self._read_topic_task = asyncio.create_task(
-            event_loop.run_in_executor(None, self._read_topic)
-        )
+        self._read_topic_task = event_loop.run_in_executor(None, self._read_topic)
 
     async def close(self):
         """Stop background tasks."""
