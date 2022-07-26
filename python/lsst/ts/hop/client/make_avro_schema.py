@@ -37,6 +37,56 @@ _SCALAR_TYPE_DICT = {
 }
 
 
+def make_avro_schema_test():
+    """Make an Avro schema for the SCiMMA rubin.testing-alert topic.
+
+    Returns
+    -------
+    avro_schema : `dict`
+        the Avro schema for the testing-alert topic
+    """
+
+    fields = [
+        dict(
+            name="private_efdStamp",
+            type="double",
+            description="UTC time for EFD timestamp. "
+            "An integer (the number of leap seconds) "
+            "different from private_sndStamp.",
+            units="second",
+            default=0,
+        ),
+        dict(
+            name="private_kafkaStamp",
+            type="double",
+            description="TAI time at which the Kafka message was created.",
+            units="second",
+            default=0,
+        ),
+        dict(
+            name="name",
+            type="string",
+            description="message name",
+            default="message",
+        ),
+        ),
+        dict(
+            name="description",
+            type="string",
+            description="message description",
+            default="default message description",
+        ),
+    ]
+
+    avro_schema = dict(
+        name="lsst.sal.scimma.rubin.testing_alert",
+        type="record",
+        fields=fields,
+    )
+
+    return avro_schema
+
+
 def make_avro_schema_heartbeat():
     """Make an Avro schema for the SCiMMA heartbeat topic.
 

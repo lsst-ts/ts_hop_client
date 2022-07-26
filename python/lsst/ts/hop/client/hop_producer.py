@@ -38,6 +38,7 @@ from lsst.ts.salkafka.kafka_producer_factory import (
 
 from .make_avro_schema import (
     make_avro_schema_heartbeat,
+    make_avro_schema_test,
     make_avro_schema_heartbeat_message,
 )
 
@@ -86,7 +87,8 @@ class HopProducer:
             self.auth = hop.auth.select_matching_auth(
                 hop.auth.load_auth(), scimma_hostname
             )
-        self.avro_schema = make_avro_schema_heartbeat()
+        # self.avro_schema = make_avro_schema_heartbeat()
+        self.avro_schema = make_avro_schema_test()
 
         self.kafka_producer = None
         self.kafka_factory.make_kafka_topics([self.avro_schema["name"]])
@@ -113,7 +115,7 @@ class HopProducer:
 
     def _read_topic(
         self,
-        topic="sys.heartbeat",
+        topic="rubin.testing-alert",
         start_offset=hop.io.consumer.ConsumerStartPosition.LATEST,
     ):
         """Start streaming messages from a kafka topic.
