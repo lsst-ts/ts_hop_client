@@ -64,11 +64,7 @@ def make_avro_schema_test():
             default=0,
         ),
         dict(
-            name="name",
-            type="string",
-            description="message name",
-            default="message",
-        ),
+            name="name", type="string", description="message name", default="message",
         ),
         dict(
             name="description",
@@ -79,9 +75,7 @@ def make_avro_schema_test():
     ]
 
     avro_schema = dict(
-        name="lsst.sal.scimma.rubin.testing_alert",
-        type="record",
-        fields=fields,
+        name="lsst.sal.scimma.rubin.testing_alert", type="record", fields=fields,
     )
 
     return avro_schema
@@ -114,17 +108,9 @@ def make_avro_schema_heartbeat():
             default=0,
         ),
         dict(
-            name="timestamp",
-            type="long",
-            description="message timestamp",
-            default=0,
+            name="timestamp", type="long", description="message timestamp", default=0,
         ),
-        dict(
-            name="count",
-            type="long",
-            description="heartbeat count",
-            default=0,
-        ),
+        dict(name="count", type="long", description="heartbeat count", default=0,),
         dict(
             name="beat",
             type="string",
@@ -134,9 +120,7 @@ def make_avro_schema_heartbeat():
     ]
 
     avro_schema = dict(
-        name="lsst.sal.scimma.sys_heartbeat",
-        type="record",
-        fields=fields,
+        name="lsst.sal.scimma.sys_heartbeat", type="record", fields=fields,
     )
 
     return avro_schema

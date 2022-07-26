@@ -37,7 +37,6 @@ from lsst.ts.salkafka.kafka_producer_factory import (
 )
 
 from .make_avro_schema import (
-    make_avro_schema_heartbeat,
     make_avro_schema_test,
     make_avro_schema_heartbeat_message,
 )
@@ -140,7 +139,9 @@ class HopProducer:
                     avro_data = make_avro_schema_heartbeat_message(message=message)
                     yield avro_data
                     if self.done_task.done():
-                        self.log.debug("Done task completed. Interrupting read topic loop.")
+                        self.log.debug(
+                            "Done task completed. Interrupting read topic loop."
+                        )
                         break
         except Exception as e:
             self.log.exception("Error reading/sending scimma topic.")
