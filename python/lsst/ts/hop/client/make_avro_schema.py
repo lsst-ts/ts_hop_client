@@ -75,7 +75,7 @@ def make_avro_schema_test():
     ]
 
     avro_schema = dict(
-        name="lsst.sal.scimma.rubin.testing_alert", type="record", fields=fields,
+        name="lsst.sal.scimma.testing_alert", type="record", fields=fields,
     )
 
     return avro_schema
