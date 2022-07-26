@@ -162,51 +162,6 @@ class HopProducer:
         """
         print(message)
 
-    def _message_relay(self, message, avro_schema):
-        """Placeholder function for translating a heartbeat message into avro
-        and relaying it to another topic.
-        """
-
-        # write the avro message to a test topic
-        stream = hop.Stream(auth=self.auth)
-        with stream.open(
-            f"kafka://{self.scimma_hostname}/{self.rubin_topic}", "w"
-        ) as s:
-            print("writing avro message\n")
-            s.write(hop.models.AvroBlob([message.content], schema=avro_schema))
-
-    def _message_parsing(self, message, avro_schema=None):
-        """Placeholder function for processing a message.
-
-        Parameters
-        ----------
-        message : `hop.models.*`
-            hop message model object received from a hop stream object.
-        """
-        # print("processing message: ", message)
-        avro_schema = make_avro_schema_heartbeat(message)
-
-        # write the avro message to a test topic
-        stream = hop.Stream(auth=self.auth)
-        with stream.open(
-            f"kafka://{self.scimma_hostname}/{self.rubin_topic}", "w"
-        ) as s:
-            print("writing avro message\n")
-            s.write(hop.models.AvroBlob([message.content], schema=avro_schema))
-
-    def get_earliest_offset(self):
-        """Shorthand function to access the earliest kafka offset. Useful when
-        wishing to stream all messages in a topic (previous and new).
-        """
-
-        return hop.io.consumer.ConsumerStartPosition.EARLIEST
-
-    def get_latest_offset(self):
-        """Shorthand function to access the latest kafka offset. Useful when
-        wishing to stream only new messages sent to a topic.
-        """
-        return hop.io.consumer.ConsumerStartPosition.LATEST
-
     async def start(self):
         """Make SCiMMA topic and associated topic producer."""
 
